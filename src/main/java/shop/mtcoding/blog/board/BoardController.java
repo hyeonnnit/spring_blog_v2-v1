@@ -13,20 +13,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardController {
     private final BoardNativeRepository boardNativeRepository;
+    private final BoardPersistRepository boardPersistRepository;
 
     @GetMapping( "/")
     public String index(HttpServletRequest request) {
-        List<Board> boardList = boardNativeRepository.findAll();
+        List<Board> boardList = boardPersistRepository.findAll();
         request.setAttribute("boardList",boardList);
         return "index";
     }
     @PostMapping("/board/{id}/update")
-    public String update (@PathVariable Integer id, String title, String content, String username){
+    public String update (@PathVariable Integer id, BoardRequest.UpdateDTO reqDTO){
 //        System.out.println("id : " + id);
 //        System.out.println("title : " + title);
 //        System.out.println("content : " + content);
 //        System.out.println("username : " + username);
-        boardNativeRepository.updateById(id, title,content,username);
+        boardPersistRepository.updateById(id, reqDTO);
         return "redirect:/board/"+id;
     }
     @GetMapping("/board/{id}/update-form")
@@ -36,11 +37,8 @@ public class BoardController {
         return "board/update-form";
     }
     @PostMapping("/board/save")
-    public String save(String username, String title, String content){
-//        System.out.println("username : " + username);
-//        System.out.println("username : " + title);
-//        System.out.println("username : " + content);
-        boardNativeRepository.save(title, content, username);
+    public String save( BoardRequest.SaveDTO reqDTO){
+        boardPersistRepository.save(reqDTO.toEntity());
         return "redirect:/";
     }
     @GetMapping("/board/save-form")
@@ -50,14 +48,14 @@ public class BoardController {
 
     @GetMapping("/board/{id}")
     public String detail(@PathVariable Integer id,HttpServletRequest request) {
-        Board board = boardNativeRepository.findById(id);
+        Board board = boardPersistRepository.findById(id);
         request.setAttribute("board", board);
         return "board/detail";
     }
 
     @PostMapping("/board/{id}/delete")
     public String delete(@PathVariable int id){
-        boardNativeRepository.deleteById(id);
+        boardPersistRepository.deleteById(id);
         return "redirect:/";
     }
 }
